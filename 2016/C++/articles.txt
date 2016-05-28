@@ -1,0 +1,49 @@
+4月
+http://thbecker.net/start_page_showing_articles.html
+auto_and_decltype
+
+http://stackoverflow.com/questions/3106110/what-are-move-semantics
+
+http://stackoverflow.com/questions/3279543/what-is-the-copy-and-swap-idiom
+
+https://web.archive.org/web/20140113221447/http://cpp-next.com/archive/2009/08/want-speed-pass-by-value/
+
+
+
+ 
+ rain and tears
+ 
+ -C -t test -p 0 -b 192.168.1.202:9092
+ 
+ 
+ http://preshing.com/20120913/acquire-and-release-semantics/
+ http://preshing.com/20130823/the-synchronizes-with-relation/
+ 
+ http://preshing.com/20120930/weak-vs-strong-memory-models/
+ 
+ http://preshing.com/archives/
+ 
+
+ https://bartoszmilewski.com/2011/10/10/async-tasks-in-c11-not-quite-there-yet/
+ 
+ https://bartoszmilewski.com/2011/07/11/monads-in-c/
+ 
+ Monads for the Curious Programmer, Part 1
+ https://bartoszmilewski.com/2011/01/09/monads-for-the-curious-programmer-part-1/
+ 
+ https://bartoszmilewski.com/2010/05/21/the-anatomy-of-message-passing/
+ 
+ https://bartoszmilewski.com/2009/08/19/the-anatomy-of-reference-counting/
+ 
+ 
+ 
+ 
+ http://blog.csdn.net/cszhouwei/article/details/11730559
+ memory model解释的比较清楚
+ 
+ 
+ 
+ http://blog.regehr.org/archives/28
+ Nine ways to break your systems code using volatile
+ 
+ 

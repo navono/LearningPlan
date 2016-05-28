@@ -1,0 +1,31 @@
+GeoQuiz 
+In your first app, you will explore the fundamentals of Android projects, activities,
+layouts, and explicit intents.
+
+CriminalIntent
+The largest app in the book, CriminalIntent lets you keep a record of your colleagues¡¯
+lapses around the office. You will learn to use fragments, master-detail interfaces,
+list-backed interfaces, menus, the camera, implicit intents, and more.
+
+BeatBox 
+Intimidate your foes with this app while you learn more about fragments, media
+playback, themes, and drawables.
+
+NerdLauncher Building this custom launcher will give you insight into the intent system and tasks.
+
+PhotoGallery
+A Flickr client that downloads and displays photos from Flickr¡¯s public feed, this
+app will take you through services, multithreading, accessing web services, and
+more.
+
+DragAndDraw 
+In this simple drawing app, you will learn about handling touch events and creating
+custom views.
+
+Sunset 
+In this toy app, you will create a beautiful representation of a sunset over open water
+while learning about animations.
+
+Locatr 
+This app lets you query Flickr for pictures around your current location and display
+them on a map. In it, you will learn how to use location services and maps.

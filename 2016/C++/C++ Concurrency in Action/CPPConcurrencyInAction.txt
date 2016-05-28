@@ -1,0 +1,146 @@
+1.介绍并发
+a.什么是并发。
+  通俗地说，在相同的时间，发生两件以上的独立事情。
+  在计算机方面，也就是系统同时执行多个独立的活动。早期的单核系统会执行任务切换(task switching)
+  来达到一种“并行”的假象。这种称为软件并发。
+  多处理器或者多核心的机器上运行的并发称之为硬件并发。具有正在并行执行多个任务的能力。
+  
+  并发有两种方式：
+  多进程并发。缺点是通讯比较复杂，也可能很慢；系统需要更多的资源去开启和管理进程；
+	优点是进程间是被隔离的，所以能更简单地写并发安全的代码；通过网络，在不同的机器上运行
+	不同的进行，增加并行性和性能。
+  多线程并发
+  
+  使用并发的理由：关注点分离和性能
+b.并发与并行的区别。
+
+2.管理线程
+a.线程都有哪些状态？
+
+
+3.在线程间共享数据
+   3.1 线程间共享数据所遇到的问题。
+   3.2 使用互斥锁保护共享数据
+   3.3 保护共享数据的其他方法
+
+  a.防止数据竞争。使用互斥锁。但是应该注意的是，针对于被保护的数据，使用指针和引用
+  都将打破互斥锁的保护。包括将数据通过指针或引用传出（返回值或输出参数）或传入到用户的函数。
+  b.死锁。std::lock_guard、std::unique_lock
+    避免死锁的几个指导意见：
+	1）避免嵌套锁。
+	2）持有锁时，避免调用用户提供的代码。这点很难做到
+	3）以固定的顺序请求锁。
+	4）层级地使用锁。
+	std::unique_lock的性能会比std::lock_guard差一些，因为std::unique_lock会在内部保存一些
+	状态。如果std::lock_guard能够满足需求的情况下，优先使用std::lock_guard。但是std::unique_lock
+	有几个好处。第一个是支持延迟锁定（deferred locking）；另外一个就是锁的所有权可以从一个作用域
+	转移到另外一个作用域。
+	std::unique_lock不总是拥有相应mutex的所有权。std::unique_lock可使用unlock在析构前放弃锁。
+  c.在合适的粒度上进行加锁。
+    尽可能的减少mutex上锁期间做的操作。尤其是一些文件I\O操作。
+	void get_and_process_data()
+	{
+	std::unique_lock<std::mutex> my_lock(the_mutex);
+	some_class data_to_process=get_next_data_chunk();
+	my_lock.unlock();
+	result_type result=process(data_to_process);
+	my_lock.lock();
+	write_result(data_to_process,result);
+	}
+  d.保护共享数据的其他方法。
+     1.初始化时，保护共享变量。std::once_flage,std::call_once
+	 2.Boost::shared_lock,Boost::shared_mutex
+	 3.递归锁
+  
+4.同步并发操作
+  4.1 等待一个事件或条件	std::condition_variable, std::condition_variable_any
+  4.2 使用future等待一次性事件
+    4.2.1 从后台任务返回一个值		std::future<>::get(), std::future<>::wait()
+	4.2.2 将任务关联一个future		std::packaged_task<>::get_future
+	4.2.3 做出承诺（std::promise）	std::promise
+	4.2.4 future对象保存异常	std::promise::set_exception(), std::promise::set_exception_at_thread_exit()
+	4.2.5 多线程等待		std::shared_future, std::future::share()
+  
+    std::shared_future是可拷贝的，每个线程可以拷贝一个副本，对副本进行操作，防止数据竞争
+    std::future有个share成员函数，可用来直接构造std::shared_future
+  4.3 在有限的时间内等待
+    有两种设置超时的方式：基于时间段(duration-based)超时，带_for后缀;绝对时间超时，带_until后缀。
+    std::future<>::wait_for/until.返回值类型为std::future_status
+  4.4使用同步操作简化代码
+    4.4.1 使用future进行函数式编程
+	   
+	4.4.2 使用消息传递进行同步操作
+  
+5.C++内存模型与原子类型操作
+  http://preshing.com/20120710/memory-barriers-are-like-source-control-operations/
+  5.1 内存模型基础
+    5.1.1 对象与内存位置（memory location）
+	    1）每个变量都是对象，包括一些变量是其他对象的成员
+		2）每个对象都占据了至少一个内存位置
+		3）基础类型变量，例如int、char都只占据一个内存位置，不管其大小如何，即使它们相邻或者是数组的一部分
+		4）相邻的位域（bit fields）是相同内存位置的一部分
+	5.1.2 对象，内存单元，并发
+	    对于C++多线程程序：任何一切都取决于内存位置。
+	5.1.3 修改序列
+	     在程序中，从对象的初始化开始，所有线程对对象的写操作构成了这个对象的修改序列。
+		 如果对象不是原子类型，程序员需要为变量的同步负责，确保所有线程对变量的修改序列保持一致。
+  
+  5.2 C++中的原子操作和原子类型
+    5.2.1 标准原子类型
+	     std::atomic<>,有以下几个成员：
+		 load(), store(), exchange(),compare_exchange_weak(),compare_exchange_stronge()
+		 每个成员都有个可选的内存序列（memory ordering）参数。可分为3类：
+		 1）Store操作，可选的有memory_order_relaxed,memory_order_release,memory_order_seq_cst序列
+		 2）Load操作，可选的有memory_order_relaxed,memory_order_consume,memory_order_acquire,memory_order_seq_cst序列
+		 3）Read-modify-write操作，可选的有memory_order_relaxed,memory_order_consume,memory_order_acquire,
+		    memory_order_release,memory_order_acq_rel,memory_order_seq_cst序列
+		所有成员的默认内存序列为memory_order_seq_cst.
+	5.2.2 std::atomic_flag类型的操作
+		 std::atomic_flag对象初始化必须使用ATOMIC_FLAG_INIT
+		 std::atomic_flag f=ATOMIC_FLAG_INIT;
+	5.2.3 std::atomic<bool>类型的操作
+	     此类型不可拷贝构造，也不可赋值构造。
+	     使用atomic类型的变量进行赋值操作（非atomic类型到atomic类型），类型的赋值操作必须是以值
+		 （相对应的非atomic类型）返回，而不是引用。
+		· 根据当前的值，更新（或不更新）一个新值
+		compare_exchange_weak()/compare_exchange_stronge().
+		此两个操作是原子类型编程的基石。
+		根据提供的期待值(expected value)与原子类型变量的值比较，如果相等，那么原子变量的值更新为期望值(desired value)
+		如果不相等，那么期待值更新为原子变量当前的值。
+		执行了更新，返回true，否则返回false
+		
+		compare_exchange_weak()有可能即使值相等的情况下，也会返回false，且原子变量的值没有更新。
+		很可能是因为运行程序的机器不支持单条"比较-交换"(compare-and-exchange)指令。如果处理器不能保证此操作能
+		原子性地执行完，因为如果运行的线程数远大于处理器数量，操作系统会将处于执行指令集中的线程换出(switch out)，而
+		用其他线程替代执行。
+		spurious failure
+		compare_exchange_X的两个memory order参数的设置。成功情况与失败情况。失败情况不进行写，
+		因此不支持memory_order_release或者memory_order_acq_rel语义。
+		如果不指定失败情况下memory order，那么回用成功情况下的memory order，这种情况下，release语义会被剥除。
+		memory_order_release变成memory_order_relaxed, memory_order_acq_rel变成memory_order_acquire.
+		默认是memory_order_seq_cst
+	5.2.4 std::atomic<T*>类型的操作
+	      此类型不可拷贝构造，也不可赋值构造。
+		  fetch_add和fetch_sub更新原有的值到指定的位置，返回原来值（T*类型）。支持memory-ordering语义。
+	5.2.5 标准的原子整形类型操作
+	5.2.6 std::atomic<>模板的操作。
+	      UDT，user define type要使用必须满足一些限制条件。比如，必须编译器生成拷贝赋值操作符。类型必须是按位比较的
+	      能使用的成员函数只有：is_lock_free,load,store,exchange,compare_exchange_weak,compare_exchange_stronge.
+	5.2.7 原子操作的自由函数
+	      因为要与C兼容，所以参数都是指针类型。
+  5.3 同步操作和执行序列
+    5.3.1 synchronizes-with关系
+	5.3.2 happens-before关系
+	5.3.3 原子操作的内存访问顺序（memory ordering）
+		  顺序一致性访问顺序（SEQUENTIALLY CONSISTENT ORDERING）
+		  非顺序一致性访问顺序（NON-SEQUENTIALLY CONSISTENT MEMORY ORDERINGS）
+	      不严格的访问顺序（RELAXED ORDERING）
+		  明白不严格的访问顺序（UNDERSTANDING RELAXED ORDERING）
+		  请求-释放访问顺序（ACQUIRE-RELEASE ORDERING）
+		  请求-释放访问顺序的传递性同步（TRANSITIVE SYNCHRONIZATION WITH ACQUIRE-RELEASE ORDERING）
+		  请求-释放访问顺序与memory_order_consum的数据依赖（DATA DEPENDENCY WITH ACQUIRE-RELEASE ORDERING AND MEMORY_ORDER_CONSUME）
+6.设计基于锁的并发数据结构
+7.设计无锁的并发数据结构
+8.设计并发代码
+9.高级线程管理
+10.测试和调试多线程程序
