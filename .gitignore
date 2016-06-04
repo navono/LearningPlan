@@ -28,5 +28,13 @@
 *.mobi
 *.epub
 *.sdf
+*.db
+.log
+.obj
+.tlo
+.tlog
+.vs
+Debug
+Release
 2016/Git
 
