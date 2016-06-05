@@ -1,0 +1,112 @@
+参考链接：http://www.oschina.net/translate/running-apache-kafka-on-windows-without-cygwin
+
+需要安装安装JRE Server版本。
+
+一些学习的链接：
+http://kafka.apache.org/documentation.html#design
+
+https://engineering.linkedin.com/kafka/benchmarking-apache-kafka-2-million-writes-second-three-cheap-machines
+
+http://www.infoq.com/cn/articles/kafka-analysis-part-1/
+
+http://www.jasongj.com/2015/01/02/Kafka%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/  Kafka深度解析
+
+http://www.oschina.net/translate/kafka-design 好文章。
+
+https://cwiki.apache.org/confluence/display/KAFKA/Kafka+mirroring
+
+http://www.open-open.com/lib/view/open1421150566328.html  存储
+
+http://www.open-open.com/lib/view/open1408436435647.html
+
+http://www.infoq.com/cn/articles/linkedIn-improving-kafka
+
+
+1.启动Zookeeper服务
+2.启动Kafka服务（broker，默认port：9092）
+  bin\windows\kafka-server-start.bat .\conf\server.properties
+3.创建topic
+  bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test
+4.创建生产者
+  bin/kafka-console-producer.sh --broker-list localhost:9092 --topic test
+5.创建消费者
+  bin/kafka-console-consumer.sh --zookeeper localhost:2181 --topic test [--from-beginning]
+ 
+显示topic列表：
+bin/kafka-topics.sh --list --zookeeper localhost:2181 test
+
+
+Kafka通常情况下是运行在集群中的服务器上。没有中央的“主”节点。代理彼此之间是对等的，
+不需要任何手动配置即可可随时添加和删除。同样，生产者和消费者可以在任何时候开启。 
+每个代理都可以在Zookeeper(分布式协调系统)中注册的一些元数据（例如，可用的主题）。
+生产者和消费者可以使用Zookeeper发现主题和相互协调。
+
+为了对数据的使用进行负载均衡并记录使用者使用的每个代理上的每个分区上的偏移量，
+所有话题的使用者都要在Zookeeper中进行注册。
+
+当使用者启动时，它要做以下这些事情：
+1.将自己注册到它属小组下的使用者id注册表。
+2.注册一个监视使用者id列的表变化情况（有新的使用者加入或者任何现有使用者的离开）的变化监视器。
+ （每个变化都会触发一次对发生变化的使用者所属的小组内的所有使用者进行负载均衡。)
+3.注册一个监视代理id注册表的变化情况（有新的代理加入或者任何现有的代理的离开）的变化监视器。
+ （每个变化都会触发一次对所有小组内的所有使用者负载均衡。）
+4.如果使用者使用某话题过滤器创建了一个消息流，它还要注册一个监视代理话题变化情况（添加了新话题）
+  的变化监视器。（每个变化都会触发一次对所有可用话题的评估，以找出话题过滤器过滤出哪些话题。
+  新过滤出来的话题将触发一次对该使用者所在的小组内所有的使用者负载均衡。）
+5.迫使自己在小组内进行重新负载均衡。
+
+
+消息格式：
+	/** 
+	 * A message. The format of an N byte message is the following: 
+	 * 
+	 * If magic byte is 0 
+	 * 
+	 * 1. 1 byte "magic" identifier to allow format changes 
+	 * 
+	 * 2. 4 byte CRC32 of the payload 
+	 * 
+	 * 3. N - 5 byte payload 
+	 * 
+	 * If magic byte is 1 
+	 * 
+	 * 1. 1 byte "magic" identifier to allow format changes 
+	 * 
+	 * 2. 1 byte "attributes" identifier to allow annotations on the message independent of the version (e.g. compression enabled, type of codec used) 
+	 * 
+	 * 3. 4 byte CRC32 of the payload 
+	 * 
+	 * 4. N - 6 byte payload 
+	 * 
+	 */
+ 
+ 
+
+
+NIO服务器
+OLTP
+
+Samzak 分布式流处理框架
+
+Designing Data-Intensive Applications
+
+Apache Flume
+
+
+
+
+
+	
+	
+	
+http://www.confluent.io/blog/compression-in-apache-kafka-is-now-34-percent-faster
+
+http://www.confluent.io/blog/hands-free-kafka-replication-a-lesson-in-operational-simplicity/
+
+http://www.confluent.io/blog/stream-data-platform-1/
+http://www.confluent.io/blog/stream-data-platform-2/
+
+http://www.confluent.io/blog/using-logs-to-build-a-solid-data-infrastructure-or-why-dual-writes-are-a-bad-idea/
+
+
+
