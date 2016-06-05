@@ -1,0 +1,128 @@
+CPU执行指令的流程：
+取指、解码、运行
+
+从内存中读取数据的流程：
+1.将要读取值的地址放入地址总线
+2.设置处理器的RD(read)引脚
+3.等待内存芯片（一个时钟周期）的响应
+4.从数据总线拷贝数据到目的操作数中
+
+32 bit x86处理器
+包括三种操作模式：
+1.保护模式(protected mode)；有段的概念
+  寻址空间为4GB。如果运行在virtual-8086模式下，每个程序都有自己的1MB内存空间。
+2.实时地址模式(real-address mode)；早期的Intel处理器模式。可以直接访问系统内存和硬件设备
+  寻址空间为1MB。
+3.系统管理模式(system management mode)。
+还有一个子模式，叫虚拟-8086（virtual-8086）,是保护模式的一种特别形式。
+
+
+通用寄存器：
+EAX EBX ECX EDX
+EBP ESP ESI EDI
+
+段寄存器：
+CS SS DS
+ES FS GS
+
+EFALGS
+EIP
+
+? EAX is automatically used by multiplication and division instructions. It is often called the
+  extended accumulator register.
+? The CPU automatically uses ECX as a loop counter.
+? ESP addresses data on the stack (a system memory structure). It is rarely used for ordinary
+  arithmetic or data transfer. It is often called the extended stack pointer register.
+? ESI and EDI are used by high-speed memory transfer instructions. They are sometimes called
+  the extended source index and extended destination index registers.
+? EBP is used by high-level languages to reference function parameters and local variables on
+  the stack. It should not be used for ordinary arithmetic or data transfer except at an advanced
+  level of programming. It is often called the extended frame pointer register.
+  
+EFLAGS寄存器：
+Control Flags：控制CPU的操作。
+Status Flags：指示CPU执行算术和逻辑运算的结果。
+包括Overflow(OF), Sign(SF), Zero(ZF), Auxiliary Carry(AC), Parity(PF), and Carry(CF) flags
+
+
+MMX寄存器
+8个64位的MMX寄存器执行一个叫SIMD(Single-Instruction, Multiple-Data)的特殊指令。
+
+XMM寄存器
+x86架构还包括8个128位叫XMM的寄存器。常被用于指令集的流式SIMD扩展
+
+
+典型X86计算机的组件
+主板。一般主板由以下组件构成：
+1.CPU插槽。插槽有不同的形状和大小，依赖于主板支持的处理器类型不同而不同。
+2.内存插槽。（SIMM或DIMM）
+3.BIOS（basic input-output system）
+4.CMOS RAM。有一个小的纽扣电池（circular battery）维持供电。
+5.外存的连接器。连接硬盘或者CD-ROMs
+6.USB接口
+7.键盘和鼠标接口（一般也都是USB类型的）
+8.PCI（Peripheral Component Interconnect）总线连接器。连接声卡，显卡或者其他IO设备
+
+以下为可选：
+1.集成音频处理器
+2.并行或串行设备接口
+3.集成网络适配器
+4.支持高速视频卡的AGP总线接口
+
+一般系统中还有以下重要的组件：
+1.FPU（Floating-Point Uint）
+2.8284/82C284时钟产生器。用来同步CPU和各个总线连接的处理单元
+3.8259A PIC（Programmable Interrupt Controller）处理来自于硬件设备的外部中断，比如键盘，系统时钟，
+  磁盘驱动等
+4.8253 Programmable Interval Timer/Counter。每秒中断系统18.2次。用来更新系统时间(date)、时钟(clock)
+  和控制扬声器。同时负责定时刷新内存。因为RAM需要定时刷新
+5.8255 Programmable Parallel Port。使用IEEE的Parallel Port接口在计算机来回传输数据。通常打印机使用
+  这种类型的接口。但其他类型的IO设备也可以使用
+
+PCI、PCI Express
+PCI提供在CPU和外设之间连接的桥梁。PCI Express提供双路的串行连接
+
+基于Intel的系统使用了以下几种类型的内存：
+1.ROM（read-only memory）：永久性的烧入到芯片中，无法擦除
+2.EPROM（erasable programmable read-only memory）：可以使用紫外线缓慢擦除，进行再次编程
+3.DRAM（dynamic random-access memory）：通常意义上的主存，需要毫秒级别的定时刷新避免数据丢失
+4.SRAM（static RAM）：通常用于高速的缓存，不需要刷新。CPU的高速缓存内存有此类型的RAM组成
+5.VRAM（video RAM）：双端口。允许一个端口持续刷新显示器(dispaly)，同时另一个端口将数据写入到显示器
+6.CMOS RAM（complimentary metal oxide semiconductor RAM）：一般在主板上使用，用来存储系统设置信息。
+  通过一个电池进行刷新。因此在计算机掉电的情况下也能保持数据
+  
+IO系统
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

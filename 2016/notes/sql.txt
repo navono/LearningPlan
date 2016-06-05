@@ -1,0 +1,97 @@
+CREATE TABLE employee (
+	employee_id INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+	last_name VARCHAR (30) NOT NULL,
+	first_name VARCHAR (30) NOT NULL,
+	email VARCHAR (100) NOT NULL,
+	hire_date DATE NOT NULL,
+	notes MEDIUMTEXT,
+	PRIMARY KEY (employee_id),
+	INDEX (last_name),
+	UNIQUE (email)
+) ENGINE = INNODB;
+
+CREATE TABLE address (
+	employee_id INTEGER UNSIGNED NOT NULL,
+	address VARCHAR (50) NOT NULL,
+	city VARCHAR (30) NOT NULL,
+	state CHAR (2) NOT NULL,
+	postcode CHAR (5) NOT NULL,
+	FOREIGN KEY (employee_id) REFERENCES employee (employee_id)
+) ENGINE = INNODB;
+
+
+SHOW CREATE TABLE address
+显示创建表的语句
+
+DESCRIBE address
+显示表的结构
+
+INSERT INTO employee (
+	first_name,
+	last_name,
+	email,
+	hire_date
+)
+VALUES
+	(
+		'qixing',
+		'ping',
+		'test@example.com',
+		'2014-12-15'
+	);
+	
+
+START TRANSACTION;
+
+INSERT INTO employee (
+	employee_id,
+	last_name,
+	first_name,
+	email,
+	hire_date
+)
+VALUES
+	(
+		42,
+		'Virey',
+		'Gener',
+		'gvirey@example.com',
+		'2015-04-02'
+	);
+
+
+START TRANSACTION;
+
+INSERT INTO employee (
+	employee_id,
+	last_name,
+	first_name,
+	email,
+	hire_date
+)
+VALUES
+	(
+		42,
+		'Virey',
+		'Gener',
+		'gvirey@example.com',
+		'2015-04-02'
+	);
+
+INSERT INTO address (
+	employee_id,
+	address,
+	city,
+	state,
+	postcode
+)
+VALUES
+	(
+		42,
+		'227 North Avenue',
+		'Anytowne',
+		'XE',
+		'97052'
+	);
+
+COMMIT;

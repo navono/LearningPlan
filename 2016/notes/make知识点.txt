@@ -1,0 +1,305 @@
+Autotools的使用流程
+第一步：手工编写Makefile.am这个文件
+ 第二步：在源代码目录树的最高层运行autoscan。然后手动修改configure.scan文件，
+		 并改名为configure.ac/configure.in。
+		 AC_INIT(hello,0.01)
+		 AM_INIT_AUTOMAKE
+		 AC_PROG_RANLIB
+
+ 第三步：运行aclocal，它会根据configure.ac的内容生成aclocal.m4文件。
+ 第四步：运行autoconf，它根据configure.ac和aclocal.m4的内容生成configure这个配置脚本文件。
+ 第五步：运行autoheader
+ 第六步：运行automake --add-missing,它根据Makefile.am的内容生成Makefile.in。
+ 第七步：运行configure，它会根据Makefile.in的内容生成Makefile这个文件。
+  获得Makefile文件后，我们就可以使用make程序来管理我们的工程了
+
+
+生成的Makefile包含了一下命令：
+make all：Build programs, libraries, documentation, etc. (same as make).
+make install：Install what needs to be installed, copying the files from the package’s tree to
+			  system-wide directories.
+make install-strip：Same as make install, then strip debugging symbols. Some users like to trade
+					space for useful bug reports. . .
+make uninstall：The opposite of make install: erase the installed files. (This needs to be run
+				from the same build tree that was installed.)
+make clean：Erase from the build tree the files built by make all.
+make distclean：Additionally erase anything ./configure created.
+make check：Run the test suite, if any.
+make installcheck：Check the installed programs or libraries, if supported.
+make dist：Recreate package-version.tar.gz from all the source files.
+
+标准目录变量
+Directory variable 		Default value
+prefix 					/usr/local
+exec_prefix 			${prefix}
+bindir 					${exec_prefix}/bin
+libdir 					${exec_prefix}/lib
+ncludedir 				${prefix}/include
+datarootdir 			${prefix}/share
+datadir 				${datarootdir}
+mandir 					${datarootdir}/man
+infodir 				${datarootdir}/info
+docdir 					${datarootdir}/doc/${PACKAGE}
+. . .
+
+
+// Makefile variables
+CC 				C compiler command
+CFLAGS 			C compiler flags
+CXX 			C++ compiler command
+CXXFLAGS 		C++ compiler flags
+LDFLAGS 		linker flags, e.g. -L<lib dir> if you have libraries in a nonstandard directory <lib dir>
+LIBS			libraries to pass to the linker, e.g. -l<library>
+CPPFLAGS 		C/C++ preprocessor flags, e.g. -I<include dir> if you have headers in a nonstandard directory <include dir>
+  
+在运行./configure的时候可以自由配置上述选项。例如：强制使用gcc-3，使用~/usr/include的头文件和~/usr/lib的库
+%./configure --prefix ~/usr CC=gcc-3 CPPFLAGS=-I$HOME/usr/include LDFLAGS=-L$HOME/usr/lib
+ 
+ 
+ 
+可在源码下创建一个叫着build的文件夹，然后再build文件夹下运行
+../configure
+make
+
+那么构建系统产生的临时文件就会在build文件夹内。
+
+同时也可以产生多个不同的构建条件的文件夹。例如debug、optim
+在debug文件夹下运行../configure CFLAGS='-g -o0'，再make
+在optim文件夹下运行../configure CFLAGS='-o3 -fomit-frame-pointer'，再make
+
+这样调试的模块和优化的模块就区分了。上述构建称之为VPATH builds，也叫parallel builds
+
+
+Two-Part Installation
+These targets are install-exec for architecture-dependent files and install-data for
+architecture-independent files.
+make install, can be
+thought of as a shorthand for make install-exec install-data.
+
+
+Cross-Compilation
+区分进行编译的构建平台（build plateform）和运行可执行模块的宿主平台（host platform）
+--build=build
+		The system on which the package is built.
+--host=host
+		The system where built programs and libraries will run.
+		
+通常交叉编译工具会使用平台前缀来命名目标平台。
+例如：i586-mingw32msvc-gcc, i586-mingw32msvc-ld, i586-mingw32msvc-as
+
+
+在安装时，重命名执行模块
+--program-prefix=prefix
+		Prepend prefix to installed program names.
+--program-suffix=suffix
+		Append suffix to installed program names.
+--program-transform-name=program
+		Run sed program on installed program names.
+
+例如：./configure --program-prefix test-
+
+
+安装在不同的目录查看已安装的文件
+./configure --prefix /usr
+make
+make DESTDIR=$HOME/inst install
+
+此时文件已经拷贝到inst目录下，inst在/usr/home/xxx(用户)/usr下
+使用以下命令可把inst中的文件写入到一个列表中
+find . -type f -print > ../files.lst
+tar zcvf ~/amhello-1.0-i686.tar.gz ‘cat ../files.lst‘
+
+
+--disable-dependency-tracking
+Speed up one-time builds.
+
+--enable-dependency-tracking
+Do not reject slow dependency extractors.
+
+
+automake的工作是读取Makefile.am文件，产生Makefile.in文件。
+
+Makefile.am文件的一些定义解释
+例如：
+bin_PROGRAMS = hello
+hello_SOURCES = main.c
+
+_PROGRAMS后缀被称之为primary，其他的primary还有‘PROGRAMS’, ‘LIBRARIES’, ‘LTLIBRARIES’, ‘LISP’,
+‘PYTHON’, ‘JAVA’, ‘SCRIPTS’, ‘DATA’, ‘HEADERS’, ‘MANS’, and ‘TEXINFOS’.
+对应于不同的文件类型
+
+bin_PROGRAMS的前缀bin指示automake将最终文件拷贝至bindir，bin只是文件变量的前缀，还可以是其他的文件夹。
+
+例如：
+SUBDIRS = src
+dist_doc_DATA = README
+
+dist_doc_DATA的后缀前面已有描述，dist表明后面的数据是需要发布的，也就是随着make dist而拷贝。
+
+大部分GNU make的扩展在Automake中是不被识别的。
+
+有时需要将文件安装到自定义的文件夹中，那么可以使用以下语句。
+例如：
+# Work around forbidden directory combinations. Do not use this
+# without a very good reason!
+my_execbindir = $(pkglibdir)
+my_doclibdir = $(docdir)
+my_execbin_PROGRAMS = foo
+my_doclib_LIBRARIES = libquux.a
+
+
+noinst_ 表明对象需要构建，但是不需要安装
+check_ 表明对象不需要被编译，直到make check命令被执行，同时这些对象是不会被安装
+
+
+Automake有两种处理目录的宏：
+SUBDIRS和DIST_SUBDIRS
+
+SUBDIRS包含的是必须构建的当前目录的子目录，必须手动定义。但是可以有条件地选择需要构建的子目录
+DIST_SUBDIRS应用在所有的目录需要递归的规则中，即使有些目录已经有选择性地从构建列表中剔除
+
+通常情况下，make maintainer-clean，make distclean，make dist会使用DIST_SUBDIRS
+其他的递归规则使用SUBDIRS
+
+如果使用有条件地定义SUBDIRS，那么Automake将会在SUBDIRS的所有条件下的值上自动定义DIST_SUBDIRS
+而如果在SUBDIRS包含了AC_SUBST变量，那么就需要手动定义DIST_SUBDIRS
+
+原因是想要make dist包含所有的文件，即使是没有构建的目录
+
+有条件地选择目录例子：
+configure.ac文件：
+...
+AM_CONDITIONAL([COND_OPT], [test "$want_opt" = yes])
+AC_CONFIG_FILES([Makefile src/Makefile opt/Makefile])
+...
+
+Makefile.am文件：
+if COND_OPT
+  MAYBE_OPT = opt
+endif
+SUBDIRS = src $(MAYBE_OPT)
+
+
+使用AC_SUBDST的例子：
+configure.ac文件：
+...
+if test "$want_opt" = yes; then
+MAYBE_OPT=opt
+else
+MAYBE_OPT=
+fi
+AC_SUBST([MAYBE_OPT])
+AC_CONFIG_FILES([Makefile src/Makefile opt/Makefile])
+...
+
+Makefile.am文件：
+SUBDIRS = src $(MAYBE_OPT)
+DIST_SUBDIRS = src opt
+
+
+在写Makefile.am的时候需要注意一下几点：
+1.SUBDIRS应该总是DIST_SUBDIRS的子集
+2.任意一个出现在DIST_SUBDIRS和SUBDIRS的目录都必须配置
+3.任意一个已被配置的目录都应该出现在DIST_SUBDIRS
+
+
+嵌套模块构建
+一个模块以来一个子文件夹下的模块，应该使用AC_CONFIG_SUBDIRS
+例如，有个叫arm的程序，链接是需要在hand目录下脚hand的库
+
+arm’s configure.ac:
+AC_INIT([arm], [1.0])
+AC_CONFIG_AUX_DIR([.])
+AM_INIT_AUTOMAKE
+AC_PROG_CC
+AC_CONFIG_FILES([Makefile])
+# Call hand’s ./configure script recursively.
+AC_CONFIG_SUBDIRS([hand])
+AC_OUTPUT
+
+arm’s Makefile.am:
+# Build the library in the hand subdirectory first.
+SUBDIRS = hand
+# Include hand’s header when compiling this directory.
+AM_CPPFLAGS = -I$(srcdir)/hand
+bin_PROGRAMS = arm
+arm_SOURCES = arm.c
+# link with the hand library.
+arm_LDADD = hand/libhand.a
+
+
+Now here is hand’s hand/configure.ac:
+AC_INIT([hand], [1.2])
+AC_CONFIG_AUX_DIR([.])
+AM_INIT_AUTOMAKE
+AC_PROG_CC
+AM_PROG_AR
+AC_PROG_RANLIB
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT
+
+and its hand/Makefile.am:
+lib_LIBRARIES = libhand.a
+libhand_a_SOURCES = hand.c
+
+
+
+AC_CONFIG_AUX_DIR指令时强制Automake和Autoconf在当前目录下查找辅助脚本。
+例如install-sh文件会出现在顶层目录和当前hand目录
+
+
+
+
+源代码条件编译
+有两个方法，一个是在_LDADD变量中使用configure替代，另一个是使用Automake条件
+例如, 如果hello-linux.c或者hello-generic.c有条件地加入到hello中, 
+Makefile.am:
+bin_PROGRAMS = hello
+hello_SOURCES = hello-common.c
+EXTRA_hello_SOURCES = hello-linux.c hello-generic.c
+hello_LDADD = $(HELLO_SYSTEM)
+hello_DEPENDENCIES = $(HELLO_SYSTEM)
+
+You can then setup the ‘$(HELLO_SYSTEM)’ substitution from configure.ac:
+...
+case $host in
+*linux*) HELLO_SYSTEM=’hello-linux.$(OBJEXT)’ ;;
+*) HELLO_SYSTEM=’hello-generic.$(OBJEXT)’ ;;
+esac
+AC_SUBST([HELLO_SYSTEM])
+...
+
+使用Automake条件编译：
+bin_PROGRAMS = hello
+if LINUX
+hello_SOURCES = hello-linux.c hello-common.c
+else
+hello_SOURCES = hello-generic.c hello-common.c
+endif
+
+或者
+bin_PROGRAMS = hello
+hello_SOURCES = hello-common.c
+if LINUX
+hello_SOURCES += hello-linux.c
+else
+hello_SOURCES += hello-generic.c
+endif
+
+configure.ac中应该使用AM_CONDITIONAL根据条件设置LINUX的值
+
+
+
+程序条件编译
+如同源码条件编译一样，有Substitutions和Conditionals两种方法
+
+
+
+
+
+
+
+
+
+
+
