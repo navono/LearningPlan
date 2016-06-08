@@ -112,3 +112,25 @@ gradlew.bat: Executable file used for build the project (Windows).
 HelloWorld.iml: Definition of your project structure.
 local.properties: Config your work space property.
 settings.gradle: Config gradle that what project that you want to build.
+
+
+
+第二章：MVC
+
+第三章：Activity的生命周期
+Q：
+1.Activity之间如何传递数据，命令等？
+2.Activity有几种状态，这几种状态都是如何切换的，靠什么去驱动切换？
+
+
+
+
+第四章：调试Android App
+Q：
+1.任何设置断点？貌似和VS的不一样，同时也找不到设置断点的地方。
+2.如何查看运行期的数据？
+3.如何与模拟器或者物理设备进行调试关联？
+
+
+
+
