@@ -120,8 +120,12 @@ settings.gradle: Config gradle that what project that you want to build.
 第三章：Activity的生命周期
 Q：
 1.Activity之间如何传递数据，命令等？
-2.Activity有几种状态，这几种状态都是如何切换的，靠什么去驱动切换？
 
+2.Activity有几种状态，这几种状态都是如何切换的，靠什么去驱动切换？
+Non-existetn
+Stopped (not visible)
+Paused (visible)
+Running (visible & in foreground)
 
 
 
