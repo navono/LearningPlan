@@ -1,6 +1,7 @@
 package com.example.navono.geoquiz;
 
 import android.content.Context;
+import android.inputmethodservice.Keyboard;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -38,6 +39,8 @@ public class GeoQuiz extends AppCompatActivity {
     private int mCurrentIndex = 0;
 
     private static final String TAG = "GeoQuiz";
+    private static final String KEY_INDEX = "index";
+
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -48,6 +51,9 @@ public class GeoQuiz extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            mCurrentIndex = savedInstanceState.getInt(KEY_INDEX);
+        }
         Log.d(TAG, "onCreate(Bundle) called");
 
         setContentView(R.layout.activity_geo_quiz);
@@ -97,6 +103,13 @@ public class GeoQuiz extends AppCompatActivity {
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         mClient = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        Log.i(TAG, "onSaveInstanceState");
+        savedInstanceState.putInt(KEY_INDEX, mCurrentIndex);
     }
 
     private void updateQuestion() {
@@ -197,5 +210,4 @@ public class GeoQuiz extends AppCompatActivity {
         super.onDestroy();
         Log.d(TAG, "onDestroy() called");
     }
-
 }
