@@ -120,12 +120,28 @@ settings.gradle: Config gradle that what project that you want to build.
 第三章：Activity的生命周期
 Q：
 1.Activity之间如何传递数据，命令等？
+通过一个叫Bundle的类。重载onSaveInstanceState，将对应的信息索引值传入到
+到Bundle实例中。
+在每次onCreate时，可以从savedInstanceState通过索引获取上次的值。
+通过Bundle保存和恢复的值只能是基本数据类型。类数据需要实现Serializable或Parcelable
+接口。但是通常不建议将类存储到Bundle中。
 
 2.Activity有几种状态，这几种状态都是如何切换的，靠什么去驱动切换？
 Non-existetn
 Stopped (not visible)
 Paused (visible)
 Running (visible & in foreground)
+
+Android自己会去将activity销毁，然后在新的方向上根据新的布局创建新的activity。
+但是在倒置方向上，貌似GeoQuiz的显示方向还是不对。
+
+
+activity还存在一种Stashed状态。并且系统会记录activity到activity record对象中。
+
+Home键和Back键存在不同。在运行app过程当中，按下Home键，app并没有实际关闭，而是处于
+stopped状态，同时内存也没有被回收。app的内部activity状态会被OS记录，下次恢复app时可以获取上次进入stopped的状态信息。
+
+而Back键导致的app退出会使得OS回收app的内存，那么也就不会保存之前的activity的状态信息了。
 
 
 
