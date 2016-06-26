@@ -1,0 +1,12 @@
+2016.6.26
+标题：7 Prerequisites to Become a Software Architect
+link：http://ithare.com/7-prerequisites-to-become-a-software-architect/
+
+先决条件-1：受团队成员和管理层的尊重（Being respected BOTH by team members AND management）
+先决条件0：有精通的技术或者足够聪明（Having technical expertise / being smart enough）
+先决条件1：你想要成员架构师（You should want to do it）
+先决条件2：你应该有走出舒适区的意愿（You should be willing to go out of your comfort zone）
+先决条件3：你应该有倾听其他人想法的意愿（和能力）（You should be willing (and be able) to listen to the others）
+先决条件4：你应该准备好去承认有些人在某些领域比你更精通（You should be ready to admit that people know better than you within their field）
+先决条件5：你应该有能力从一些不相干的细节中跳出来（You should be able to isolate yourself from irrelevant details）
+
