@@ -1,6 +1,7 @@
 package com.example.navono.geoquiz;
 
 import android.content.Context;
+import android.content.Intent;
 import android.inputmethodservice.Keyboard;
 import android.net.Uri;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ public class GeoQuiz extends AppCompatActivity {
     private Button mTrueButton;
     private Button mFalseButton;
     private Button mNextButton;
+    private Button mCheatButton;
     private TextView mQuestionTextView;
 
     private Question[] mQuestionBank = new Question[]{
@@ -61,8 +63,9 @@ public class GeoQuiz extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
-        updateQuestion();
+        mQuestionTextView =
+                (TextView) findViewById(R.id.question_text_view);
+//        updateQuestion();
 
         mTrueButton = (Button) findViewById(R.id.true_button);
         mTrueButton.setOnClickListener(new View.OnClickListener() {
@@ -90,6 +93,21 @@ public class GeoQuiz extends AppCompatActivity {
             }
         });
 
+        mCheatButton = (Button)findViewById(R.id.cheat_button);
+        mCheatButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v) {
+                // Start CheatActivity
+//                Intent i = new Intent(GeoQuiz.this, CheatActivity.class);
+//                startActivity(i);
+
+                boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
+                Intent i = CheatActivity.newIntent(GeoQuiz.this, answerIsTrue);
+                startActivity(i);
+            }
+        });
+
         updateQuestion();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -113,6 +131,8 @@ public class GeoQuiz extends AppCompatActivity {
     }
 
     private void updateQuestion() {
+//        Log.d(TAG, "Updating question text for question #" + mCurrentIndex,
+//                new Exception());
         int question = mQuestionBank[mCurrentIndex].getTextResId();
         mQuestionTextView.setText(question);
     }
