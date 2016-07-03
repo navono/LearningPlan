@@ -10,6 +10,11 @@ link：http://ithare.com/7-prerequisites-to-become-a-software-architect/
 先决条件4：你应该准备好去承认有些人在某些领域比你更精通（You should be ready to admit that people know better than you within their field）
 先决条件5：你应该有能力从一些不相干的细节中跳出来（You should be able to isolate yourself from irrelevant details）
 
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+
 2016.7.1
 标题：TCP/IP Explained. A Bit
 link：http://ithare.com/tcp-ip-explained-a-bit/
@@ -90,6 +95,62 @@ PMTUD是TCP的一个特性，就是在客户端和服务器之间的链路检测
 
 
 
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+2016.0703
+标题：高性能数据传输
+link：http://www.psc.edu/index.php/networking/641-tcp-tune#options
+
+影响传输数据的传输速度有几个方面：
+1. BDP（Bandwidth Delay Products）
+2. 发送端和接收端的缓冲区大小（一般都是64KB）
+
+BDP等于链路的传输最小速度*RTT
+
+提高网络传输性能有以下选项：
+1. 最大化TCP缓冲区（内存）大小
+   有些系统会有一些全局性的设置来限值TCP连接可使用的系统内存的大小。有些系统会根据
+   输入的数据、输出的数据以及控制变量来限制链路的内存
+2. socket缓冲区大小
+   大部分操作系统支持根据每个连接来设置发送和接收的缓冲区大小。BSB的setscokopt中的
+   SO_SNDBUF和SO_RCVBUF。socket的缓冲区必须能够容纳TCP的BDP加上一些操作系统的开销。这些
+   同样也决定了Receiver Window（rwnd），用于在TCP连接的两端实现流控。调整socket缓冲区大小
+   有以下几种方式：
+  a.TCP自动调整
+  b.调整全局变量从而控制默认socket缓冲区大小。
+  c.过大的缓冲区也可能会导致链路的交互性变得很差，同时也有过度使用内存的风险。所以建议轻微
+  地大于64KB
+  d.开发者可以使用setsockopt去设置socket缓冲区的大小
+  
+3. TCP大窗口扩展（Large Window Extensions。RFC1323）
+   开启可选的TCP协议特性支持大BDP路径。window scale option（WSCALE）
+4. TCP可选择的确认选项（Selective Acknowledgments Option。SACK，RFC2018）
+    允许TCP接收方通知发送方那些数据已经丢失需要重传。
+5. Path MTU
+
+
+Windows下设置TCP参数的方法：
+http://www.speedguide.net/articles/windows-2kxp-registry-tweaks-157
+   
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 
 
 
