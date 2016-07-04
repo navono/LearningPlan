@@ -177,3 +177,13 @@ Q：
 见问题1
 
 
+第七章：Fragments和Fragment管理器
+Q:
+1.什么是Fragment？引入Fragment解决什么问题？带来什么好处？
+
+2.如何创建Fragment以及如何管理Fragment？
+
+
+
+
+
