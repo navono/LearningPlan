@@ -168,7 +168,12 @@ Q：
 第五章：第二个Activity
 Q：
 1.多个activity是如何切换的？
-2.多个activity如何传递数据？
+通过Indent。创建第二个activity时，可以传入已知的Indent对象以及一些数据给第二个activity(startActivityForResult)。
+第二个activity启动后可以获取父activity传来的数据，通过Intent的一些getXXXExtra方法。在结束
+子activity时，也可以返回一些数据到父activity，通过Intent的putExtra方法。在父activity中，重载onActivityResult
+可以获取子activity的最终的数据。
 
+2.多个activity如何传递数据？
+见问题1
 
 
