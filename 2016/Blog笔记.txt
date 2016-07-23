@@ -134,15 +134,42 @@ Windows下设置TCP参数的方法：
 http://www.speedguide.net/articles/windows-2kxp-registry-tweaks-157
    
 
+2016.0715
+g3log源码分析
+
+第一步：
+先用静态方法createLogWorker创建LogWorker实例，LogWorker内部维护了一个LogWorkerImpl对象。
+LogWorkerImpl内部保存了Active指针（异步消息队列，使用std::thread异步执行），同时还维护了一个
+Sink的指针列表（使用父类SinkWrapper类型）。
+
+
+第二步：
+增加Sink，也就是实际上的Log处理方式。有两种方式，一是使用默认的addDefaultLogger；另一种是显示调用addSink
+addDefaultLogger里默认使用FileSink，用户传入文件名相关的信息，回调方法是FileSink::fileWrite。
+
+每当增加Sink的时候，都会将Sink实例传入到LogWorkerImpl内部的Sink指针列表保存，同时返回一个SinkHandle指针用于外部
+使用（内部有一个Sink实例的弱引用）。
+
+Sink内部会有一个后台的Active用于执行任务
+
+
+第三步：
+调用initializeLogging，传入LogWorker实例初始化全局变量。
+
+
+第四步：
+使用宏记录Log信息。可使用的宏包括：LOGF、LOGF_IF、LOG、LOG_IF、CHECK、CHECKF
+这些宏内部都会使用LogCapture进行消息的格式化，在LogCapture析构方法里，调用internal空间的saveMessage对消息进行设置，
+包括构造LogMessage对象，如果是Fatal消息，则调用fatalCall，否则调用pushMessageToLogger。
+在pushMessageToLogger里，使用第三步传入的LogWorker实例的save方法进行保存。
+fatalCall调用pushFatalMessageToLogger，使用LogWorker的fatal方法进行保存。
+
+
+在LogWorkerImpl中，最终会遍历Sink队列，调用Sink的send方法保存消息。Sink的后台线程会调用之前保存的回调进行实际保存。
+在FileSink中，析构时会调用std::flush，将数据通过std::ofstream更新到磁盘中
   
-  
-  
-  
-  
-  
-  
-  
-  
+
+
   
   
   
