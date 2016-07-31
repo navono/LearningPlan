@@ -1,0 +1,3 @@
+PROJECT(HELLOLIB)
+cmake_minimum_required(VERSION 3.3)
+ADD_SUBDIRECTORY(lib)
