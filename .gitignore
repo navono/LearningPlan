@@ -38,3 +38,5 @@ Debug
 Release
 2016/Git
 
+*.opendb
+*.VC.db
