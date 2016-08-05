@@ -1,1 +1,1 @@
-所有代码来自于http://www.modernescpp.com/
+http://www.modernescpp.com/
