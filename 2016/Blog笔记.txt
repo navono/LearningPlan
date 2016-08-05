@@ -169,8 +169,11 @@ fatalCall调用pushFatalMessageToLogger，使用LogWorker的fatal方法进行保
 在FileSink中，析构时会调用std::flush，将数据通过std::ofstream更新到磁盘中
   
 
-
-  
+2016.0723
+http://www.modernescpp.com/
+http://www.jellythink.com/archives/878							C++设计模式
+https://github.com/rigtorp/awesome-modern-cpp
+http://cppcast.com/
   
   
   
