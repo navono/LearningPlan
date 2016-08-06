@@ -177,10 +177,191 @@ http://cppcast.com/
   
   
   
-  
-  
-  
-  
+2016.0806
+C++有六种内存模型
+enum memory_order{
+  memory_order_relaxed,
+  memory_order_consume,
+  memory_order_acquire,
+  memory_order_release,
+  memory_order_acq_rel,
+  memory_order_seq_cst
+}
+
+
+有两个问题：
+1.哪些原子类型操作需要使用内存模型？
+2.内存模型定义了那些同步语义（synchronization ）和执行序列约束（ordering constraints）？
+
+
+读操作：memory_order_acquire, memory_order_consume
+写操作：memory_order_release
+读-修改-写操作：memory_order_acq_rel, memory_order_seq_cst
+
+memory_order_relaxed没有定义任何同步语义和顺序一致性约束
+
+
+				read		write		read-modify-write
+test_and_set								1
+clear						  1	
+is_lock_free	  1
+load			  1
+store						  1
+exchange									1
+compare_exchange_weak						1
+compare_exchange_strong						1
+fetch_*										1
+
+
+*****************************************************************
+C++11中有三种不同类型的同步语义和执行序列约束：
+顺序一致性（Sequential consistency）：memory_order_seq_cst
+在线程间，建立了一个全局的执行序列。
+
+请求-释放（Acquire-release）：memory_order_consume, 
+							  memory_order_acquire, 
+							  memory_order_release
+							  memory_order_acq_rel
+在线程间的同一个原子变量的读和写操作上建立了一个执行序列。							  
+							  
+松散型（非严格约束。Relaxed）：memory_order_relaxed
+只保证在同一个线程内，同一个原子变量的操作的执行序列不会被重排序（reordered）。
+这种保证称之为modification order consistency.但是其他线程看到的这些操作的不同执行序列。
+*****************************************************************
+
+
+越往下，同步语义越弱，但是执行的优化越高。
+
+*****************************************************************
+顺序一致性有两个特性：
+1.所有线程执行指令的顺序都是按照源代码的顺序；
+2.每个线程所能看到其他线程的操作的执行顺序都是一样的。
+*****************************************************************
+
+所以所有的线程都遵循一个全局的时间线。
+
+std::string work;
+std::atomic<bool> ready(false);
+
+void consumer(){
+  while(!ready.load()){}
+  std::cout<< work << std::endl;    
+}
+
+void producer(){
+  work= "done";
+  ready=true; 
+}
+
+
+以上代码的解释是：
+=> Means it follows in the next lines:
+
+1. work = "done"  is sequenced-before ready=true => work = "done" happens-before ready=true
+2. while(!ready.load()){} is sequenced-before std::cout<< work << std::endl 
+		=>  while(!ready.load()){} happens-before std::cout<< work << std::endl
+3. ready = true synchronizes-with while(!ready.load()){}  => ready = true inter-thread happens-before while (!ready.load()){} 
+		=> ready = true happens-before while (!ready.load()){}
+		
+=>  Because the happens-before relation is transitive, it follows t: work = "done" happens-before 
+	ready = true happens-before while(!ready.load()){} happens-before std::cout<< work << std::endl
+
+
+
+*****************************************************************
+请求-释放模型的中心思想是：
+在同一个原子变量的release操作和acquire操作间同步，同时也就建立起了执行序列约束。
+所有的读和写动作不能移动到acquire操作之前！
+所有的读和写动作不能移动到release操作之后！
+*****************************************************************
+
+release-acquire操作在线程间建立了一种happens-before。所以acquire之后的操作和release之前的操作
+就能进行同步。
+
+release-acquire操作具有传递性。
+
+std::vector<int> mySharedWork;
+std::atomic<bool> dataProduced(false);
+std::atomic<bool> dataConsumed(false);
+
+void dataProducer(){
+    mySharedWork={1,0,3};
+    dataProduced.store(true, std::memory_order_release);
+}
+
+void deliveryBoy(){
+    while( !dataProduced.load(std::memory_order_acquire) );
+    dataConsumed.store(true,std::memory_order_release);
+}
+
+void dataConsumer(){
+    while( !dataConsumed.load(std::memory_order_acquire) );
+    mySharedWork[1]= 2;
+}
+
+
+以上代码的解释是：
+1. mySharedWork={1,0,3};  is sequenced-before 
+	dataProduced.store(true, std::memory_order_release);
+2. while( !dataProduced.load(std::memory_order_acquire) ); is sequenced-before
+    dataConsumed.store(true,std::memory_order_release);
+3. while( !dataConsumed.load(std::memory_order_acquire) ); is sequenced-before
+    mySharedWork[1]= 2;
+
+4. dataProduced.store(true, std::memory_order_release); is synchronizes-with
+	while( !dataProduced.load(std::memory_order_acquire) );
+5. dataConsumed.store(true,std::memory_order_release); is synchronizes-with
+	while( !dataConsumed.load(std::memory_order_acquire) );
+
+因此dataProducer和dataConsumer能够正确同步。
+
+
+
+
+*****************************************************************
+std::memory_order_consume说的是关于原子变量的数据依赖。
+数据依赖有两种方式：
+1. carries-a-dependency-to
+	如果操作A的结果用于操作B的操作当中，那么A carries-a-dependency-to（将依赖带入） B
+2. dependency-ordered-before
+	如果操作B的结果进一步在相同的线程内被操作C使用，那么A的stor操作(with std::memory_order_release, 
+	std::memory_order_acq_rel or std::memory_order_seq_cst)是dependency-ordered-before（在依赖执行序列X之前）
+	B的load操作(with std::memory_order_consume)。
+*****************************************************************
+
+std::atomic<std::string*> ptr;
+int data;
+std::atomic<int> atoData;
+ 
+void producer(){
+    std::string* p  = new std::string("C++11");
+    data = 2011;
+    atoData.store(2014,std::memory_order_relaxed);
+    ptr.store(p, std::memory_order_release);
+}
+ 
+void consumer(){
+    std::string* p2;
+    while (!(p2 = ptr.load(std::memory_order_consume)));
+    std::cout << "*p2: " << *p2 << std::endl;
+    std::cout << "data: " << data << std::endl;
+    std::cout << "atoData: " << atoData.load(std::memory_order_relaxed) << std::endl;
+}
+
+以上代码的解释是：
+1. ptr.store(p, std::memory_order_release) is dependency-ordered-before 
+	while (!(p2 = ptr.load(std::memory_order_consume)))。因为后面的std::cout << "*p2: " << *p2 << std::endl;
+	将读取load操作的结果。
+2. while (!(p2 = ptr.load(std::memory_order_consume)) carries-a-dependency-to 
+	std::cout << "*p2: " << *p2 << std::endl。因为*p2的输出使用了ptr.load操作的结果
+
+综上所述，对于data和atoData的输出是没有保证的。因为它们和ptr.load操作没有carries-a-dependency-to关系。
+同时它们又不是原子变量，这将会导致race condition。因为在同一时间，多个线程可以访问data，线程t1（producer）
+同时会修改它。程序的行为因此是未定义的（undefined）
+
+
+
+
 
 
 
