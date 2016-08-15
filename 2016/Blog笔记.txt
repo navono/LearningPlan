@@ -361,6 +361,89 @@ void consumer(){
 
 
 
+2016.0808
+Memory barriers
+
+读和写操作，或者称为load，store
+有4中不同的组合：
+LoadLoad: A load followed by a load. 
+LoadStore: A load followed by a store.
+StoreLoad: A store followed by a load.
+StoreStore: A store followed by a store.
+
+如果memory barriers在LoadLoad、LoadStore、StoreLoad、StoreStore之间，那么上述的操作
+就不能被重排序（reordered）。如果使用非原子变量或relaxed语义，那么还是会有被重排序的风险。
+
+有三种类型的memory barriers：full fence，acquire fence，release fence。
+acquire是load操作，release是store操作。
+
+Full fence: A full fence std::atomic_thread_fence() between two arbitrary operations prevents the 
+			reordering of these operations. But that guarantee will not hold for StoreLoad operations. They can be reordered.
+Acquire fence: An acquire fence std:.atomic_thread_fence(std::memory_order_acquire) prevents, that a read 
+			   operation before an acquire fence can be reordered with a read or write operation after the acquire fence.
+Release fence: A release fence std::memory_thread_fence(std::memory_order_release) prevents, that a read or write operation 
+			   before a release fence can be reordered with a write operation after a release fence.
+
+
+
+2016.0814
+1. Don’t work alone. Always work with other developers if you can.
+2. Don’t wait for inspiration. Inspiration isn’t something you can control, and if you depend on it, 
+	you won’t be able to work all the time. Build discipline by forcing yourself to work. 
+	Discipline is reliable.
+3. Real work usually isn’t fun. It is tough and exhausting, Don’t run from that!
+4. Practice, practice, and practice. Practice makes perfect.
+5. Tutorials fish on your behalf, so you don’t need to learn how to fish yourself. You need to read books.
+6. Always try to understand a new concept using different resources. This will help you see it from 
+	different perspectives, which will improve your comprehension.
+7. Don’t just read. Build. Try, try, and keep trying. Programming is like swimming. You can’t compare 
+	someone who spends all their time swimming with someone who spends all their time reading about 
+	swimming and how the body works when swimming.
+8. Frustration, boredom, tiredness, exhaustion — these are all normal. They don’t indicate wither you are 
+	not the right person for a given profession.All they say is that you are putting in effort and doing your best.
+9. Ask. Whether it is a technical question or not, just ask. If you can’t find the right person to ask, 
+	there is two great alternatives, you can’t imagine how many times they saved me. Quora and Stack Overflow.
+
+Don’t quit! Always Remember that every expert was once a beginner.
+			   
+
+
+			   
+2016.0814
+如何与遗留代码工作
+
+可以从以下几点着手：
+1. 首先是态度问题。因为在遗留代码中加入新功能并不是一个令人感到激情满满的工作，所有有时候在态度上并没有
+   保持一个好的状态。尤其是遇到一些令人抓狂的代码。态度决定了我们的行动，行动决定了最后的结果。
+   所有一开始我们应该带着一个开放的心态去面对遗留代码，去了解它，明白它做了什么，怎么做的。
+2. 想要了解遗留代码那就需要一个突破口。一般来说可以选择和用户进行交互的地方作为一个切入口。比如：有对话框的话，
+   对对话框上的一些控件做一些操作，看下有怎样的结果；是否有TCP的数据传输，端口多少（这个可以借助工具，比如Process explorer等）。
+   有了一个表层的切入口之后，我们就可以深入到代码里，看下代码具体做了些什么。
+3. 在了解遗留代码的过程中，我们可以借助一些工具，比如UML。在进行调用跟踪的时候，可以画一画时序图。这非常有用，
+   因为我们的脑子不可能记住超过5层的函数调用，所有借助工具，可以帮助我们理清里面的执行流、数据流。
+4. 在理解了已有代码的执行流、数据流之后。我们可以采用小的、增量式的改进来   改善遗留代码，而不是一上来就进行大规模的重构
+   大规模的重构或者修改。小的、增量式的改进的方面包括（但不局限于）：
+   a)命名规范
+   b)代码排版
+   c)注释规范（是否已经超期腐败导致言不达意，是否只具有类似写了一个谁谁谁到此一游的风格注释等）
+   d)代码冗余
+   e)代码结构（这个在一定层度上会使用。因为要加入新特性，而老的代码结构阻止了这个行为，那么就需要修改一些代码结构。
+     有时也可以采用Adapter模式）
+5. 保证每一个改进，都应该让代码在朝着一个好的方向演进
+6. 如果需要增加新特性。那么需要考虑是否在改进前将新特性加入，还是在改进后加入。这要视情况而定。
+   a)如果在遗留代码的基础上，加入新特性代码。在后续的改进时能够不影响新特性的代码逻辑
+   或者可以很简单地通过屏蔽新特性的代码回复到改进的逻辑之前，可以在遗留代码改进前加入。
+   b)如果在遗留代码的基础上，已无法简单的直接加入新特性。那么需要执行第4步。之后加入新特性。
+7. 如果在我们评估遗留代码的改进量太大的情况，需要进行一些管理层的决策。
+    比如是否真的有必要投入资源；进行修改的话能不能在deadline前完成；修改面的影响有多大，是否影响到核心功能等等。
+   
+   
+以上任何修改都应该在代码备份库上执行，这是为了留一条后路。
+
+
+
+
+
 
 
 
