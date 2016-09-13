@@ -442,7 +442,16 @@ Don’t quit! Always Remember that every expert was once a beginner.
 
 
 
+2016.0815
+Don’t copy-paste code. Type it out.
+https://medium.freecodecamp.com/the-benefits-of-typing-instead-of-copying-54ed734ad849#.8z4k9lov2
 
+Here’s the most efficient way to learn in this context:
+1. Read a piece of code
+2. Understand all features of the language that are being used there
+3. Understand all the features of the libraries/frameworks that are being used there
+4. Learn the basics of those libraries/frameworks
+5. Understand what every line does and the purpose of those libraries/frameworks in the context of that piece of code
 
 
 
