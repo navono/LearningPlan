@@ -1,3 +1,5 @@
+// http://www.zedwood.com/
+
 #pragma once
 
 #include <cstring>
