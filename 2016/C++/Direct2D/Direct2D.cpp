@@ -8,6 +8,7 @@
 
 
 #pragma comment(lib, "d2d1")
+#pragma comment(lib, "Dwrite")
 
 
 // Global Variables:
@@ -54,6 +55,11 @@ Direct2DApp::Direct2DApp()
 	, _pRenderTarget(nullptr)
 	, _pLightSlateGrayBrush(nullptr)
 	, _pCornflowerBlueBrush(nullptr)
+	, _pPathGeometry(nullptr)
+	, _pBlackBrush(nullptr)
+	, _pLGBrush(nullptr)
+	, _pDWriteFactory(nullptr)
+	, _pTextFormat(nullptr)
 {
 
 }
@@ -64,6 +70,7 @@ Direct2DApp::~Direct2DApp()
 	SafeRelease(&_pRenderTarget);
 	SafeRelease(&_pLightSlateGrayBrush);
 	SafeRelease(&_pCornflowerBlueBrush);
+	SafeRelease(&_pPathGeometry);
 }
 
 HRESULT Direct2DApp::Initialize()
@@ -90,11 +97,11 @@ HRESULT Direct2DApp::Initialize()
 
 		// Because the CreateWindow function takes its size in pixels,
 		// obtain the system DPI and use it to scale the window size
-		FLOAT dpix, dpiy;
+		//FLOAT _dpix, _dpiy;
 
 		// The factory returns the current system DPI. This is also the value
 		// it will use to create its own windows.
-		_pDirect2dFactory->GetDesktopDpi(&dpix, &dpiy);
+		_pDirect2dFactory->GetDesktopDpi(&_dpix, &_dpiy);
 
 		m_hwnd = CreateWindow(
 			L"Direct2DApp",
@@ -102,8 +109,8 @@ HRESULT Direct2DApp::Initialize()
 			WS_OVERLAPPEDWINDOW,
 			CW_USEDEFAULT,
 			CW_USEDEFAULT,
-			static_cast<UINT>(ceil(640.f * dpix / 96.f)),
-			static_cast<UINT>(ceil(480.f * dpix / 96.f)),
+			static_cast<UINT>(ceil(640.f * _dpix / 96.f)),
+			static_cast<UINT>(ceil(480.f * _dpix / 96.f)),
 			nullptr,
 			nullptr,
 			HINST_THISCOMPONENT,
@@ -139,7 +146,89 @@ HRESULT Direct2DApp::CreateDeviceIndependentResources()
 	HRESULT hr = S_OK;
 
 	// Create a Direct2D factory
+	// D2D1_FACTORY_TYPE_SINGLE_THREADED constant merely specifies that the 
+	// factory object, as well as any and all objects rooted in that factory, 
+	// may be accessed by only a single thread at a time.
 	hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &_pDirect2dFactory);
+
+	ID2D1GeometrySink *pSink;
+	_pDirect2dFactory->CreatePathGeometry(&_pPathGeometry);
+
+	_pPathGeometry->Open(&pSink);
+	pSink->SetFillMode(D2D1_FILL_MODE_ALTERNATE);
+
+	pSink->BeginFigure(
+		D2D1::Point2F(50, 50),
+		D2D1_FIGURE_BEGIN_FILLED
+		);
+
+	pSink->AddLine(D2D1::Point2F(100, 50));
+	pSink->AddLine(D2D1::Point2F(100, 30));
+
+	pSink->AddLine(D2D1::Point2F(150, 60));	// 右顶点
+
+	pSink->AddLine(D2D1::Point2F(100, 90));
+
+	pSink->AddLine(D2D1::Point2F(100, 70));
+	pSink->AddLine(D2D1::Point2F(50, 70));
+
+
+	//pSink->AddLine(D2D1::Point2F(200, 0));
+
+	//pSink->AddBezier(
+	//	D2D1::BezierSegment(
+	//	D2D1::Point2F(150, 50),
+	//	D2D1::Point2F(150, 150),
+	//	D2D1::Point2F(200, 200))
+	//	);
+
+	//pSink->AddLine(D2D1::Point2F(0, 200));
+
+	//pSink->AddBezier(
+	//	D2D1::BezierSegment(
+	//	D2D1::Point2F(50, 150),
+	//	D2D1::Point2F(50, 50),
+	//	D2D1::Point2F(0, 0))
+	//	);
+
+
+	pSink->EndFigure(D2D1_FIGURE_END_CLOSED);
+	pSink->Close();
+	SafeRelease(&pSink);
+
+	hr = DWriteCreateFactory(
+		DWRITE_FACTORY_TYPE_SHARED, 
+		__uuidof(IDWriteFactory), 
+		reinterpret_cast<IUnknown**>(&_pDWriteFactory));
+
+	_text = L"优先级";
+	_textLen = (UINT32)wcslen(_text);
+
+	if (SUCCEEDED(hr))
+	{
+		_pDWriteFactory->CreateTextFormat(
+			//L"Consolas",
+			L"宋体",
+			nullptr,
+			DWRITE_FONT_WEIGHT_REGULAR,
+			DWRITE_FONT_STYLE_NORMAL,
+			DWRITE_FONT_STRETCH_NORMAL,
+			50.0f,
+			//L"en-us",
+			L"zh-cn",
+			&_pTextFormat);
+	}
+
+	if (SUCCEEDED(hr))
+	{
+		hr = _pTextFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+	}
+
+	if (SUCCEEDED(hr))
+	{
+		hr = _pTextFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+	}
+
 	return hr;
 }
 
@@ -180,6 +269,38 @@ HRESULT Direct2DApp::CreateDeviceResouces()
 			hr = _pRenderTarget->CreateSolidColorBrush(
 				D2D1::ColorF(D2D1::ColorF::CornflowerBlue),
 				&_pCornflowerBlueBrush);
+		}
+
+		hr = _pRenderTarget->CreateSolidColorBrush( D2D1::ColorF(D2D1::ColorF::Black),
+			&_pBlackBrush);
+
+		if (SUCCEEDED(hr))
+		{
+			// Create a linear gradient.
+			static const D2D1_GRADIENT_STOP stops[] =
+			{
+				{   0.f,  { 0.f, 1.f, 1.f, 0.25f }  },
+				{   1.f,  { 0.f, 0.f, 1.f, 1.f }  },
+			};
+
+			ID2D1GradientStopCollection *pGradientStops;
+			hr = _pRenderTarget->CreateGradientStopCollection(
+				stops,
+				ARRAYSIZE(stops),
+				&pGradientStops
+				);
+
+			if (SUCCEEDED(hr))
+			{
+				hr = _pRenderTarget->CreateLinearGradientBrush(
+					&D2D1::LinearGradientBrushProperties(D2D1::Point2F(100, 0), D2D1::Point2F(100, 200)),
+					&D2D1::BrushProperties(),
+					pGradientStops,
+					&_pLGBrush
+					);
+			}
+
+			SafeRelease(&pGradientStops);
 		}
 	}
 
@@ -234,13 +355,23 @@ HRESULT Direct2DApp::OnRender()
 			rtSize.width / 2 + 100.0f,
 			rtSize.height / 2 + 100.0f);
 
-		// Draw a filled rectangle
-		_pRenderTarget->FillRectangle(&rectangle1, _pLightSlateGrayBrush);
+		//// Draw a filled rectangle
+		//_pRenderTarget->FillRectangle(&rectangle1, _pLightSlateGrayBrush);
 
-		// Draw the outline of a rectangle
-		_pRenderTarget->DrawRectangle(&rectangle2, _pCornflowerBlueBrush);
+		//// Draw the outline of a rectangle
+		//_pRenderTarget->DrawRectangle(&rectangle2, _pCornflowerBlueBrush);
+
+
+		//_pRenderTarget->SetTransform(D2D1::Matrix3x2F::Translation(50.f, 50.f));
+		_pRenderTarget->DrawGeometry(_pPathGeometry, _pBlackBrush, 1.f);
+		_pRenderTarget->FillGeometry(_pPathGeometry, _pLGBrush);
+
+
+		D2D1_RECT_F layoutRect = D2D1::RectF(60.f, 15.f, 420.f, 100.f);
+		_pRenderTarget->DrawText(_text, _textLen, _pTextFormat, layoutRect, _pBlackBrush);
 
 		hr = _pRenderTarget->EndDraw();
+
 		if (hr == D2DERR_RECREATE_TARGET)
 		{
 			hr = S_OK;
@@ -266,6 +397,10 @@ void Direct2DApp::DiscardDeviceResources()
 	SafeRelease(&_pRenderTarget);
 	SafeRelease(&_pLightSlateGrayBrush);
 	SafeRelease(&_pCornflowerBlueBrush);
+	SafeRelease(&_pBlackBrush);
+	SafeRelease(&_pLGBrush);
+	SafeRelease(&_pDWriteFactory);
+	SafeRelease(&_pTextFormat);
 }
 
 LRESULT CALLBACK Direct2DApp::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)

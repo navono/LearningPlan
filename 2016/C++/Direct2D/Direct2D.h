@@ -72,8 +72,23 @@ private:
 
 private:
 	HWND m_hwnd;
+	FLOAT _dpix, _dpiy;
+
+	//CComptr<>
 	ID2D1Factory			*_pDirect2dFactory;
 	ID2D1HwndRenderTarget	*_pRenderTarget;
 	ID2D1SolidColorBrush	*_pLightSlateGrayBrush;
 	ID2D1SolidColorBrush	*_pCornflowerBlueBrush;
+
+
+	ID2D1PathGeometry		*_pPathGeometry;
+	ID2D1SolidColorBrush	*_pBlackBrush;
+	ID2D1LinearGradientBrush	*_pLGBrush;
+
+
+	IDWriteFactory			*_pDWriteFactory;
+	IDWriteTextFormat		*_pTextFormat;
+
+	const wchar_t*	_text;
+	UINT32			_textLen;
 };
