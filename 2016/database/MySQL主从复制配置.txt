@@ -1,0 +1,103 @@
+Windows版
+master：192.168.1.75
+slave：192.168.1.55
+
+
+Master端：
+1.修改my.ini配置文件。Windows版的binlog默认是关闭的。
+# Binary Logging. master-bin为前缀
+log-bin=master-bin
+log-bin-index=master-bin.index
+
+binlog-do-db=
+binlog-ignore-db=
+
+# Server Id. id不能和slave的ID重复
+server-id=1
+
+由于二进制文件的缓冲区内，当我们的服务器宕机的时候，缓存区内的数据并没有同步到二进制日志文件
+内的时候，那就悲剧了，缓冲区内的数据就无法找回了，为了防止这种情况的发送，
+我们通过设置mysql直接把二进制文件记录到二进制文件而不再缓冲区内停留。
+在主服务器上进行设置，用于事务安全
+sync-binlog = ON 
+
+
+
+2.重启mysql服务
+
+3. 在mysql命令工具中，查看binlog是否开启
+-> show binary logs;
+
+4.在mysql命令工具中，进行授权
+-> grant replication client,replication slave on *.* to rep@'192.168.1.%' identified by '1234';
+
+rep是slave用来登录到master的用户名，by后面的'1234'是密码。这个用户只具有复制权限。
+
+
+5.重置binlog。如果不重置的话，需要记录当前master的log_file和log_pos，并在下面启用复制操作时制定这两个参数
+  或者在slave的配置文件指定
+-> reset master;
+
+
+Slave端：
+1.修改my.ini配置文件：
+#log-bin=mysql-bin      禁用二进制日志，从服务器不需要二进制日志文件  
+datadir = /mydata/data  mysql的数据目录  
+relay-log = relay-log   设置中继日志  
+relay-log-index = relay-log.index  中继日志索引  
+server-id       = 2    id不要和主服务器的一样  
+
+2. 重启mysql服务
+
+3.启用复制，让slave连接master并开始重做master的bin log的事件
+>change master to master_host='192.168.1.55',master_user='root',master_password='1234',master_port=3306,
+  master_log_file='master-bin.000001',master_log_pos=0;
+  
+  master_log_pos为在master节点，show binary logs的结果。
+
+4.开启slave
+>start slave;
+
+5.确认slave和master是否通信成功
+>show slave status\G
+
+Slave_IO_Running
+Slave_SQL_Running
+是否为Yes
+
+6.开启slave端的数据只读属性
+>show global variables like 'read%';
+查看read_only属性的值为OFF
+
+>set global read_only=1;
+>show global variables like 'read%';
+
+在此修改的属性只在此服务周期内有效，服务重启后失效。
+想要永久生效，需要在my.ini中加入：
+read_only=ON
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+修改用户后，服务需要重启。
+
+
+默认情况下，会同步该用户下的所有DB，可以通过以下手段限定同步哪些DB：
+1.在master的my.ini配置文件中
+#binlog-do-db=
+#binlog-ignore-db=
+
+（验证OK）
+
+2.在grant分配权限操作时，限定数据库。（尚未验证）
+
+3.在slave上使用replication-do-db=dbname限定同步。（验证后，NG）
+
+/////////////////////////////////////////////////////////////////////////////
+PS：
+MySQL做了主从复制后，使用mysqldump对数据备份时，一定要注意按照如下方式：
+mysqldump -master-data -single-transaction -user=username -password=password dbname > dumpfilename
+
+这样就可以保留file和position信息，在新搭建slave的时候，还原数据库，file和position信息也随之更新。
+再start slave就可以迅速的完成增量同步。
