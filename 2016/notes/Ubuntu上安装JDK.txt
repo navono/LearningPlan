@@ -1,0 +1,43 @@
+在ubuntu上安装JDK
+
+1. 下载Linux版JDK。
+	从Oracle上下载JDK安装包
+
+2. 解压安装
+xx@ubuntu:~$ mkdir -p /usr/lib/jvm
+xx@ubuntu:~$ sudo mv jdk-8u11-linux-i586.tar.gz /usr/lib/jvm
+xx@ubuntu:~$ cd /usr/lib/jvm
+xx@ubuntu:~$ sudo tar xzvf jdk-8u11-linux-i586.tar.gz
+xx@ubuntu:~$ sudo ln -s jdk1.8.0_11 java-8
+
+3. 设置环境变量
+在系统中添加环境变量，主要是PATH、CLASSPATH和JAVA_HOME。
+xx@ubuntu:~$ vi ~/.bashrc
+使用其他的编辑器也可以
+
+在文件最后加入
+export JAVA_HOME=/usr/lib/jvm/java-8
+export JRE_HOME=${JAVA_HOME}/jre
+export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib
+export PATH=${JAVA_HOME}/bin:$PATH
+保存退出，并通过命令使脚本生效：
+
+xx@ubuntu:~$ source ~/.bashrc
+
+4. 配置默认JDK版本
+xx@ubuntu:~$ sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-8/bin/java 300
+xx@ubuntu:~$ sudo update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/java-8/bin/javac 300
+xx@ubuntu:~$ sudo update-alternatives --config java
+
+因为我是在虚拟机中安装的Ubuntu 14.04，默认不安装OpenJDK，所以没有需要选择的JDK版本。如果是在物理机上安装的Ubuntu版本，会出现几个候选项，可用于替换 java (提供 /usr/bin/java)。
+
+选择 路径 优先级 状态
+------------------------------------------------------------
+0 /usr/lib/jvm/java-6-openjdk/jre/bin/java 1061 自动模式
+1 /usr/lib/jvm/java-6-openjdk/jre/bin/java 1061 手动模式
+\* 2 /usr/lib/jvm/java-6-sun/bin/java 300 手动模式
+\# 要维持当前值 请按回车键，或者键入选择的编号：2
+update-alternatives: 使用 /usr/lib/jvm/java-8/bin/java 来提供 /usr/bin/java (java)，于 手动模式 中。
+
+5. 测试验证
+xx@ubuntu:~$ java -version
