@@ -46,3 +46,119 @@ Reactor和Proactor模式的主要区别就是真正的读取和写入操作是有谁来完成的，Reactor中
 
 
 
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+windows平台的IO模型：
+1. 选择（Select）
+2. 异步选择（WSAAsyncSelect）
+3. 事件选择（WSAEventSelect）
+4. 重叠IO（Overlapped IO）
+5. 完成端口（Completion Port）
+
+
+
+1. 选择（Select）模型
+主要使用widnows的select函数。
+
+在服务器端，默认情况下调用accept是阻塞的。
+将socket句柄与fd_set关联
+然后判断fd_set的状态，从而做出动作。
+
+
+2. 异步选择（WSAAsyncSelect）模型
+依赖于窗口过程，通过WSAAsyncSelect(sListen, hwnd, WM_SOCKET, FD_ACCEPT);
+将SOCKET与消息WM_SOCKET（自定义）绑定，同时指定我们关心的模式（FD_ACCEPT）。
+当接收到WM_SOCKET时，可以对参数WSAGETSELECTEVENT(lParam))进行判断：
+ switch (WSAGETSELECTEVENT(lParam))
+    {
+    case FD_ACCEPT:
+      // Accept a connection from client
+      sClient = accept(wParam, (struct sockaddr *)&client, &iAddrSize);
+      
+      // Associate client socket with FD_READ and FD_CLOSE event
+      WSAAsyncSelect(sClient, hwnd, WM_SOCKET, FD_READ | FD_CLOSE);
+      break;
+
+    case FD_READ:
+      ret = recv(wParam, szMessage, MSGSIZE, 0);
+
+      if (ret == 0 || ret == SOCKET_ERROR && WSAGetLastError() == WSAECONNRESET)
+      {
+        closesocket(wParam);
+      }
+      else
+      {
+        szMessage[ret] = '/0';
+        send(wParam, szMessage, strlen(szMessage), 0);
+      }
+      break;
+      
+    case FD_CLOSE:
+      closesocket(wParam);      
+      break;
+    }
+
+
+3. 事件选择（WSAEventSelect）模型
+将每个socket和WSAEVENT对象关联。并且在关联的时候指定需要关注的哪些网络事件。一旦在某个套接字上发生了我们关注的事件
+（FD_READ和FD_CLOSE），与之相关联的WSAEVENT对象被Signaled。
+
+在工作线程里，使用WaitForXXX的形式的WSAWaitForMultipleEvents来等待设置的事件。
+
+
+
+4. 重叠IO（Overlapped IO）模型
+有两种实现方式：使用事件通知；使用完成例程。
+只是内核通知应用的方式不一样，一个使用事件，一个使用回调。
+同时使用了一个异步的操作（WSARecv）
+
+使用事件通知：
+创建WSAOVERLAPPED::hEvent，并同时保存到全局数组中。
+调用WSARecv触发一个异步操作。
+在工作线程里，再使用WSAWaitForMultipleEvents。
+有通知后，使用WSAGetOverlappedResult获取结果。再次调用WSARecv触发一个异步操作。
+
+使用完成例程：
+就是在WSARecv的最后一个参数中传入一个回调函数。同时需要注意的是，在工作现场调用WSARecv异步操作后，需要调用
+SleepEx(1000, TRUE);来提示此线程是可通知的。并且内核可以使用我们提供的回调进行通知。有以下几种情况：
+· An I/O completion callback function is called
+· An asynchronous procedure call (APC) is queued to the thread.
+· The time-out interval elapses
+
+
+
+5. 完成端口（Completion Port）模型
+
+
+
+
+模型比较：
+1. 线程数
+选择、事件选择、用事件通知实现的重叠IO都有每个线程最大64个连接数的限制。如果连接数太大，需要对客户端socket进行分组管理。
+相反，异步选择、用完成例程实现的重叠IO、完成端口不受此限制。
+2. 实现复杂度
+3. 性能
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+Linux平台的IO模型：
+1. 阻塞IO（blocking IO）
+2. 非阻塞IO（nonblocking IO）
+3. IO复用，select和poll（IO multiplexing）
+4. 信号驱动IO（signal driven IO；SIGIO）
+5. 异步IO（asynchronous IO）
+
+前面四种均为同步IO
+
+
+
+
+
+
+
+

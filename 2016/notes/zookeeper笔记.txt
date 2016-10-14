@@ -229,3 +229,67 @@ znode由3部分组成：
 
 
 
+
+
+
+集群配置：
+(1) initLimit
+此配置表示，允许follower(相对于Leaderer言的“客户端”)连接并同步到Leader的初始化连接时间，以tickTime为单位。
+当初始化连接时间超过该值，则表示连接失败。
+
+(2) syncLimit
+
+此配置项表示Leader与Follower之间发送消息时，请求和应答时间长度。如果follower在设置时间内不能与leader通信，
+那么此follower将会被丢弃。
+
+(3) server.A=B：C：D
+A：其中 A 是一个数字，表示这个是服务器的编号；
+B：是这个服务器的 ip 地址；
+C：Leader选举的端口；
+D：Zookeeper服务器之间的通信端口。
+
+(4) myid和zoo.cfg
+除了修改 zoo.cfg 配置文件，集群模式下还要配置一个文件 myid，这个文件在 dataDir 目录下，这个文件里面就有一个
+数据就是 A 的值，Zookeeper 启动时会读取这个文件，拿到里面的数据与 zoo.cfg 里面的配置信息比较从而判断到底是
+那个 server。
+
+
+tickTime ：这个时间是作为 Zookeeper 服务器之间或客户端与服务器之间维持心跳的时间间隔，也就是每个 tickTime时间就会发送一个心跳；
+dataDir：顾名思义就是 Zookeeper 保存数据的目录，默认情况下，Zookeeper 将写数据的日志文件也保存在这个目录里；
+clientPort：这个端口就是客户端连接 Zookeeper 服务器的端口，Zookeeper 会监听这个端口，接受客户端的访问请求。
+
+
+
+
+
+客户端连接Zookeeper服务：
+zkCli.sh -server 127.0.0.1:2181
+
+查看哪个节点被选作Leader或者Follower
+echo stat|nc 127.0.0.1 2181
+
+测试是否启动了该Server，若回复imok表示已经启动
+echo ruok|nc 127.0.0.1 2181
+
+
+上述的ruok属于Zookeeper的四字命令，其他的四字命令还有：
+conf	输出相关服务配置的详细信息
+cons	列出所有连接到服务器的客户端的完全的连接/会话的详细信息。包括“接收/发送”的包数量、会话ID、操作延迟等
+dump	列出未经处理的会话和临时节点
+envi	输出关于服务环境的详细信息（区别于conf命令）
+reqs	列出未经处理的请求
+ruok	测试服务是否处于正确状态。如果正常，那么服务返回“imok”，否则无响应
+stat	输出关于性能和连接的客户端的列表
+wchs	列出服务器watch的详细信息
+wchc	通过session列出服务器的watch的详细信息，它的输出是一个与watch相关的会话的列表
+wchp	通过路径列出服务器watch的详细信息。它输出一个与session相关的路径
+
+
+
+
+
+
+
+
+
+
