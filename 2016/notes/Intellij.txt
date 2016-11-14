@@ -1,0 +1,72 @@
+
+1. Ctrl + E
+   Ctrl + Tab也可以
+	显示最近使用的文件。同时可用Shift + S进行过滤
+2. Ctrl + F12
+	显示当前文件的结构。包括成员方法和成员变量。同时也支持过滤
+3. Alt + Home
+	跳转至导航栏，使用上下左右箭头进行文件选择
+4. Ctrl + N
+	跳转至指定类
+5. Ctrl + Shift + N
+	跳转至指定的文件或目录
+6. Ctrl + Shift + Alt + N
+	跳转至指定符号（不太明白这里的符号指的是什么）
+7. Alt + F1
+	在...中选定，显示一个可选择的列表
+8. 跳转至指定的工具窗口，包括：
+	Alt + 1: Project工具窗口
+	Alt + 9: Changes工具窗口
+	Alt + F12：Terminal窗口
+9. Ctrl + Shift + T
+	跳转至对应的单元测试
+10. Ctrl + U
+	跳转至上方的层级（接口）
+11. Ctrl + Alt + B
+	跳转至下方的层级（实现）
+12. Ctrl + Shift + H
+	方法层级图。显示所有实现者或者覆写了当前方法的类。个人感觉没什么屁用
+13. Ctrl + H
+	显示实现关系
+14. Ctrl + Alt + U
+	图形化显示类的层级关系
+15. Ctrl + Alt + H
+	显示方法调用的层级结构
+16. Ctrl + Alt + F7
+	显示使用情况
+17. Ctrl + Shift + E
+	最近编辑的文件
+18. F11
+	增加书签
+19. Shift + F11
+	显示书签列表，可进行选择
+20. Alt + Insert
+	自动生成（构造函数，getter,setter）
+21. Alt + Enter
+	检测黄色警告的修改方案
+22. Ctrl + Alt + L
+	自动格式化代码
+22. Ctrl + Shift + Space
+	自动提示
+23. Ctrl + W
+	自动按语法选中
+24. Ctrl + Shift + W
+	自动按语法反向选中
+25. Ctrl + Shift + A
+	执行命令
+26. Ctrl + B
+	显示方法的调用方	
+	
+
+	
+	
+F9            resume programe 恢复程序
+Alt+F10       show execution point 显示执行断点
+F8            Step Over 相当于eclipse的f6      跳到下一步
+F7            Step Into 相当于eclipse的f5就是  进入到代码
+Alt+shift+F7  Force Step Into 这个是强制进入代码
+Shift+F8      Step Out  相当于eclipse的f8跳到下一个断点，也相当于eclipse的f7跳出函数
+Atl+F9        Run To Cursor 运行到光标处
+ctrl+shift+F9   debug运行java类
+ctrl+shift+F10  正常运行java类
+alt+F8          debug时选中查看值

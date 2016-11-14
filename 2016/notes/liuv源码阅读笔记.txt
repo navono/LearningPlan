@@ -1,0 +1,41 @@
+Watcher包括：
+prepare
+check
+idle
+
+(*(QUEUE **) &((*(q))[0]))
+
+uv__once_init()
+	uv__loops_init();	初始化全局对象uv__loops和锁uv__loops_lock
+	uv_winapi_init();	动态加载Ntdll中的一些函数地址
+	uv_winsock_init();	初始化winsock，设置绑定的地址。并判断LSP
+	uv_fs_init();	将_fmode设置为_O_BINARY
+	uv_signals_init();	初始化全局锁uv__signal_lock
+	uv_console_init();	初始化全局信号量uv_tty_output_lock
+	uv__util_init();	初始化时钟间隔变量
+	uv__init_detect_system_wakeup();	注册系统电源信号（PBT_APMRESUMESUSPEND，PBT_APMRESUMEAUTOMATIC）回调
+
+创建完成端口，句柄放入loop->iocp
+uv_update_time()
+初始化wq、handle_queue、active_reqs
+初始化timer_heap（二叉最小堆）
+初始化check_handles、prepare_handles、idle_handles、async_handles
+调用uv_req_init初始化async_req。实际就是初始化overlapped.Internal字段为0
+初始化wq_mutex
+调用uv_async_init初始化wq_async，设置回调为uv__work_done
+初始化loops_queue
+调用uv__loops_add，将loop加入到队列（uv__loops）
+
+
+QUEUE_FS_TP_JOB：
+请求注册：req->active_queue加入到loop->active_reqs
+工作任务提交（提交到线程池）：
+	1. 初始化条件变量，锁，创建线程池，默认为4个线程，线程的执行入口为worker
+	   每个入口的参数为thread_ctx指针，thread_ctx的entry保存worker函数指针。
+	   在线程运行起来后，调用uv__init_current_thread_key初始化uv__current_thread_key（uv_key_t TlsAlloc，只创建一次）。
+	   然后将线程句柄设置给uv__current_thread_key。
+	   启动entry
+		  
+	2. work_req的work设置为uv__fs_work回调，done设置为uv__fs_done回调，同时将loop指定为全局loop
+	3. 将work_req的wq加入到线程池的wq队列。如果有线程空闲的话，设置cond通知空闲线程
+
